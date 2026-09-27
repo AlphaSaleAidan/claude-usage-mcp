@@ -41,6 +41,7 @@ claude mcp add -s user claude-usage -- node ~/claude-usage-mcp/server.mjs
 Restart Claude Code and try:
 
 > *"What's my usage right now?"*
+>
 > *"Budget 20% of my weekly on the website rebuild."*
 
 ## Tools
