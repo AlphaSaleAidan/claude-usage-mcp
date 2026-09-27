@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="400" viewBox="0 0 1280 400">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1a1917"/><stop offset="1" stop-color="#121110"/>
+    </linearGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#ffffff" stroke-opacity="0.035"/>
+    </pattern>
+    <style>
+      .t{font-family:ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
+      .m{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    </style>
+  </defs>
+  <rect width="1280" height="400" rx="20" fill="url(#bg)"/>
+  <rect width="1280" height="400" rx="20" fill="url(#grid)"/>
+
+  <!-- left: title -->
+  <g transform="translate(80,0)">
+    <g transform="translate(0,112)" fill="none" stroke="#D97757" stroke-width="3" stroke-linecap="round">
+      <path d="M4 36a24 24 0 1 1 48 0"/><path d="M28 36l12-14"/><circle cx="28" cy="36" r="3" fill="#D97757"/>
+    </g>
+    <text x="72" y="148" class="m" font-size="18" fill="#D97757" letter-spacing="2">MCP SERVER</text>
+    <text x="0" y="214" class="t" font-size="58" font-weight="700" fill="#F0EEE6" letter-spacing="-1.5">claude-usage-mcp</text>
+    <text x="0" y="262" class="t" font-size="24" fill="#A8A499">Let Claude see its own session + weekly usage</text>
+    <text x="0" y="294" class="t" font-size="24" fill="#A8A499">— and actually stick to a budget.</text>
+  </g>
+
+  <!-- right: meter card -->
+  <g transform="translate(780,70)">
+    <rect width="420" height="260" rx="16" fill="#1f1e1c" stroke="#2e2d2a"/>
+    <text x="28" y="44" class="m" font-size="14" fill="#77736a" letter-spacing="1.5">GET_USAGE</text>
+
+    <text x="28" y="86" class="t" font-size="17" fill="#E8E6DC">Session · 5h</text>
+    <text x="392" y="86" class="m" font-size="17" fill="#E8E6DC" text-anchor="end">38%</text>
+    <rect x="28" y="98" width="364" height="8" rx="4" fill="#2e2d2a"/>
+    <rect x="28" y="98" width="138" height="8" rx="4" fill="#E8E6DC"/>
+
+    <text x="28" y="142" class="t" font-size="17" fill="#E8E6DC">Weekly</text>
+    <text x="392" y="142" class="m" font-size="17" fill="#E8E6DC" text-anchor="end">62%</text>
+    <rect x="28" y="154" width="364" height="8" rx="4" fill="#2e2d2a"/>
+    <rect x="28" y="154" width="226" height="8" rx="4" fill="#E8E6DC"/>
+
+    <line x1="28" y1="186" x2="392" y2="186" stroke="#2e2d2a"/>
+    <text x="28" y="214" class="t" font-size="17" fill="#D97757">Budget · website-rebuild</text>
+    <text x="392" y="214" class="m" font-size="17" fill="#D97757" text-anchor="end">14 / 20%</text>
+    <rect x="28" y="226" width="364" height="8" rx="4" fill="#3a2a22"/>
+    <rect x="28" y="226" width="255" height="8" rx="4" fill="#D97757"/>
+  </g>
+</svg>

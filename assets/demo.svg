@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="480" viewBox="0 0 1280 480">
+  <defs><style>
+    .t{font-family:ui-sans-serif,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
+    .m{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  </style></defs>
+  <rect width="1280" height="480" rx="20" fill="#141413"/>
+  <g transform="translate(40,28)">
+    <circle cx="8" cy="8" r="6" fill="#3a3935"/><circle cx="28" cy="8" r="6" fill="#3a3935"/><circle cx="48" cy="8" r="6" fill="#3a3935"/>
+    <text x="600" y="13" class="m" font-size="14" fill="#5f5b53" text-anchor="middle">claude — ~/website</text>
+  </g>
+  <g class="m" font-size="20">
+    <text x="60" y="100" fill="#77736a">&gt;</text>
+    <text x="84" y="100" fill="#F0EEE6">Rebuild the pricing page. Spend at most 20% of my weekly limit on it.</text>
+
+    <text x="60" y="160" fill="#D97757">●</text>
+    <text x="84" y="160" fill="#E8E6DC">claude-usage · budget_start <tspan fill="#77736a">(project: "website", weekly_pct: 20)</tspan></text>
+    <text x="84" y="192" fill="#77736a">└ weekly now 48% · budget 20% · remaining 20% · OK</text>
+
+    <text x="60" y="248" fill="#77736a">…</text>
+    <text x="84" y="248" fill="#A8A499">builds hero, pricing table, FAQ</text>
+
+    <text x="60" y="304" fill="#D97757">●</text>
+    <text x="84" y="304" fill="#E8E6DC">claude-usage · budget_check</text>
+    <text x="84" y="336" fill="#77736a">└ used 17.2% · remaining 2.8% · <tspan fill="#E3B341">LOW — wrap up</tspan></text>
+
+    <text x="60" y="392" fill="#F0EEE6">●</text>
+    <text x="84" y="392" fill="#F0EEE6">Budget is nearly spent (17% of 20%), so I'm stopping here.</text>
+    <text x="84" y="424" fill="#F0EEE6">Hero and pricing table are done; FAQ is next when you're ready.</text>
+  </g>
+  <text x="1240" y="452" class="t" font-size="14" fill="#4a4741" text-anchor="end">illustrative example</text>
+</svg>

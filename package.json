@@ -1,12 +1,34 @@
 {
   "name": "claude-usage-mcp",
   "version": "0.1.0",
-  "description": "MCP server that lets Claude (or any AI) see your real Claude plan usage — session and weekly % — and stick to a per-project budget.",
+  "description": "MCP server that lets Claude (or any AI) see your real Claude plan usage \u2014 session and weekly % \u2014 and stick to a per-project budget.",
   "type": "module",
-  "bin": { "claude-usage-mcp": "server.mjs" },
-  "files": ["server.mjs"],
-  "scripts": { "test": "node test.mjs" },
-  "engines": { "node": ">=18" },
-  "keywords": ["mcp", "claude", "claude-code", "usage", "rate-limit", "budget"],
-  "license": "MIT"
+  "bin": {
+    "claude-usage-mcp": "server.mjs"
+  },
+  "files": [
+    "server.mjs",
+    "assets"
+  ],
+  "scripts": {
+    "test": "node test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "mcp",
+    "claude",
+    "claude-code",
+    "usage",
+    "rate-limit",
+    "budget"
+  ],
+  "license": "MIT",
+  "author": "Aidan Pierce (https://github.com/AlphaSaleAidan)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlphaSaleAidan/claude-usage-mcp.git"
+  },
+  "homepage": "https://github.com/AlphaSaleAidan/claude-usage-mcp#readme"
 }
