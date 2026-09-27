@@ -1,0 +1,12 @@
+{
+  "name": "claude-usage-mcp",
+  "version": "0.1.0",
+  "description": "MCP server that lets Claude (or any AI) see your real Claude plan usage — session and weekly % — and stick to a per-project budget.",
+  "type": "module",
+  "bin": { "claude-usage-mcp": "server.mjs" },
+  "files": ["server.mjs"],
+  "scripts": { "test": "node test.mjs" },
+  "engines": { "node": ">=18" },
+  "keywords": ["mcp", "claude", "claude-code", "usage", "rate-limit", "budget"],
+  "license": "MIT"
+}
