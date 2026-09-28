@@ -2,7 +2,8 @@
 // claude-usage-mcp — lets an AI read its own Claude plan usage (session + weekly %)
 // and hold itself to a budget. Zero dependencies. MCP over stdio, `node server.mjs` for a CLI print,
 // or `node server.mjs --statusline` for the Claude Code status bar.
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
@@ -118,7 +119,8 @@ async function call(name, a = {}) {
   throw new Error(`Unknown tool ${name}`);
 }
 
-const isMain = import.meta.url === `file://${process.argv[1]}`;
+// realpath: npx / global installs launch us through a symlink; also survives spaces in paths.
+const isMain = !!process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url);
 
 // --- Status bar: one line, colored when a limit gets close ---
 const tint = (pct, text) => (pct >= 90 ? `\x1b[31m${text}\x1b[0m` : pct >= 75 ? `\x1b[33m${text}\x1b[0m` : text);
