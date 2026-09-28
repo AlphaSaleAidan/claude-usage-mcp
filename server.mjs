@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // claude-usage-mcp — lets an AI read its own Claude plan usage (session + weekly %)
-// and hold itself to a budget. Zero dependencies. MCP over stdio, or `node server.mjs` for a CLI print.
+// and hold itself to a budget. Zero dependencies. MCP over stdio, `node server.mjs` for a CLI print,
+// or `node server.mjs --statusline` for the Claude Code status bar.
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { homedir } from 'node:os';
@@ -9,7 +10,8 @@ import { createInterface } from 'node:readline';
 
 const CLAUDE_DIR = process.env.CLAUDE_CONFIG_DIR || join(homedir(), '.claude');
 const BUDGETS = process.env.CLAUDE_USAGE_BUDGETS || join(CLAUDE_DIR, 'usage-budgets.json');
-const CACHE_MS = 60_000; // ponytail: 1-min cache so a chatty agent can't hammer the endpoint
+const CACHE = join(CLAUDE_DIR, 'usage-cache.json');
+const CACHE_MS = 60_000; // 1-min file cache, shared by the MCP server and every status-bar redraw
 
 function token() {
   if (process.env.CLAUDE_OAUTH_TOKEN) return process.env.CLAUDE_OAUTH_TOKEN;
@@ -24,16 +26,19 @@ function token() {
   return t;
 }
 
-let cache = { at: 0, data: null };
 async function fetchUsage() {
-  if (Date.now() - cache.at < CACHE_MS) return cache.data;
+  try {
+    const c = JSON.parse(readFileSync(CACHE, 'utf8'));
+    if (Date.now() - c.at < CACHE_MS) return c.data;
+  } catch {}
   const res = await fetch('https://api.anthropic.com/api/oauth/usage', {
     headers: { Authorization: `Bearer ${token()}`, 'anthropic-beta': 'oauth-2025-04-20', 'User-Agent': 'claude-usage-mcp' },
   });
   if (res.status === 401) throw new Error('Login token expired. Run any `claude` command once to refresh it, then retry.');
   if (!res.ok) throw new Error(`Usage endpoint returned ${res.status}`);
-  cache = { at: Date.now(), data: await res.json() };
-  return cache.data;
+  const data = await res.json();
+  writeFileSync(CACHE, JSON.stringify({ at: Date.now(), data }));
+  return data;
 }
 
 const until = (iso) => {
@@ -114,6 +119,24 @@ async function call(name, a = {}) {
 }
 
 const isMain = import.meta.url === `file://${process.argv[1]}`;
+
+// --- Status bar: one line, colored when a limit gets close ---
+const tint = (pct, text) => (pct >= 90 ? `\x1b[31m${text}\x1b[0m` : pct >= 75 ? `\x1b[33m${text}\x1b[0m` : text);
+if (isMain && process.argv.includes('--statusline')) {
+  try {
+    const u = await call('get_usage');
+    const parts = [
+      tint(u.session_pct, `session ${Math.round(u.session_pct)}% (${u.session_resets_in})`),
+      tint(u.weekly_pct, `week ${Math.round(u.weekly_pct)}% (${u.weekly_resets_in})`),
+      ...(await call('budget_check')).map((b) =>
+        tint((b.used_pct / b.budget_pct) * 100, `${b.project} ${b.used_pct}/${b.budget_pct}%`)),
+    ];
+    console.log(parts.join('  ·  '));
+  } catch (e) {
+    console.log(`usage: ${e.message}`);
+  }
+  process.exit(0);
+}
 
 // --- CLI: `node server.mjs` (in a terminal) prints usage + budgets ---
 if (isMain && process.stdin.isTTY) {

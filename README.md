@@ -90,6 +90,23 @@ When a usage budget is active for the current project, call budget_check between
 steps and stop to tell me when it says LOW or OVER_BUDGET.
 ```
 
+## Usage in your status bar
+
+See your limits at the bottom of Claude Code at all times. Add this to `~/.claude/settings.json`:
+
+```json
+"statusLine": {
+  "type": "command",
+  "command": "node ~/claude-usage-mcp/server.mjs --statusline"
+}
+```
+
+```
+session 38% (2h 14m)  ·  week 62% (3d 9h)  ·  website-rebuild 14/20%
+```
+
+Any number turns yellow at 75% and red at 90% of its limit.
+
 ## From the terminal
 
 ```bash
@@ -100,7 +117,7 @@ node ~/claude-usage-mcp/server.mjs    # prints usage + all budgets as JSON
 
 It reads your existing Claude Code login (`~/.claude/.credentials.json`, or the macOS Keychain)
 and calls the same endpoint `/usage` uses. Your token is only ever sent to `api.anthropic.com`.
-Results are cached for 60 seconds.
+Results are cached for 60 seconds in `~/.claude/usage-cache.json`, so the status bar never hammers the API.
 
 ## Good to know
 
