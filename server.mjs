@@ -61,28 +61,40 @@ function summarize(u) {
     const name = l.scope?.model?.display_name;
     if (l.group === 'weekly' && name) out[`weekly_${name.toLowerCase()}_pct`] = l.percent;
   }
+  const f = out.weekly_fable_pct;
+  if (f >= 90) out.fable_alert = `STOP: Fable weekly at ${f}%. Move Fable work to Opus until it resets (${out.weekly_resets_in}).`;
+  else if (f >= 75) out.fable_alert = `WARN: Fable weekly at ${f}%. Keep Fable for the Lead and final grades only.`;
   return out;
 }
 
 // --- budgets: "spend at most N% of the weekly limit on project X" ---
-const load = () => (existsSync(BUDGETS) ? JSON.parse(readFileSync(BUDGETS, 'utf8')) : {});
+const load = () => (existsSync(BUDGETS) && JSON.parse(readFileSync(BUDGETS, 'utf8') || '{}')) || {}; // an empty file reads as no budgets
 const save = (b) => writeFileSync(BUDGETS, JSON.stringify(b, null, 2));
 
+// The endpoint's reset time jitters by fractions of a second between calls; only a move of over an hour is a new week.
+const rolled = (was, now) => {
+  const d = Date.parse(now) - Date.parse(was);
+  return Number.isNaN(d) ? was !== now : Math.abs(d) > 3_600_000;
+};
+// The % a budget tracks: the whole weekly, or one model's weekly cap (model: 'fable' -> weekly_fable_pct).
+const pctOf = (b, s) => (b.model ? s[`weekly_${b.model}_pct`] ?? 0 : s.weekly_pct);
+
 export function measure(b, s) {
+  const pct = pctOf(b, s);
   // Weekly window rolled over since we last looked: bank what was spent, restart from 0.
-  if (b.resets_at && s.weekly_resets_at && b.resets_at !== s.weekly_resets_at) {
+  if (b.resets_at && s.weekly_resets_at && rolled(b.resets_at, s.weekly_resets_at)) {
     b.carried += b.last_pct - b.baseline_pct;
     b.baseline_pct = 0;
   }
-  b.last_pct = s.weekly_pct;
+  b.last_pct = pct;
   b.resets_at = s.weekly_resets_at;
-  const used = +(b.carried + s.weekly_pct - b.baseline_pct).toFixed(1);
+  const used = +(b.carried + pct - b.baseline_pct).toFixed(1);
   const left = +(b.limit_pct - used).toFixed(1);
   return {
-    project: b.name, budget_pct: b.limit_pct, used_pct: used, remaining_pct: left,
+    project: b.name, ...(b.model && { model: b.model }), budget_pct: b.limit_pct, used_pct: used, remaining_pct: left,
     status: left <= 0 ? 'OVER_BUDGET — stop work on this project and tell the user' : left < b.limit_pct * 0.2 ? 'LOW — wrap up' : 'OK',
-    weekly_pct_now: s.weekly_pct, started: b.started,
-    note: 'Measured as the change in account-wide weekly %, so work in other sessions during this time also counts.',
+    weekly_pct_now: pct, started: b.started,
+    note: `Measured as the change in the account-wide ${b.model ? `${b.model} ` : ''}weekly %, so work in other sessions during this time also counts.`,
   };
 }
 
@@ -92,7 +104,8 @@ const TOOLS = [
   { name: 'budget_start', description: 'Start a usage budget for a project, e.g. "spend at most 20% of my weekly on X". Records the current weekly % as the starting point. Restarting an existing name resets it.',
     inputSchema: { type: 'object', required: ['project', 'weekly_pct'], properties: {
       project: { type: 'string', description: 'Project name' },
-      weekly_pct: { type: 'number', description: 'Max share of the weekly limit, in percentage points (20 = 20%)' } } } },
+      weekly_pct: { type: 'number', description: 'Max share of the weekly limit, in percentage points (20 = 20%)' },
+      model: { type: 'string', description: "Track one model's own weekly cap instead of the whole weekly, e.g. 'fable' (reads weekly_fable_pct)" } } } },
   { name: 'budget_check', description: 'Check how much of a project budget is used and left. Call this between major steps of budgeted work; stop when status is OVER_BUDGET. Omit project to list all budgets.',
     inputSchema: { type: 'object', properties: { project: { type: 'string' } } } },
   { name: 'budget_end', description: 'Delete a project budget.',
@@ -106,8 +119,10 @@ async function call(name, a = {}) {
   const all = load();
   if (name === 'budget_start') {
     if (!(a.weekly_pct > 0 && a.weekly_pct <= 100)) throw new Error('weekly_pct must be between 0 and 100');
-    all[a.project] = { name: a.project, limit_pct: a.weekly_pct, baseline_pct: s.weekly_pct, carried: 0,
-      last_pct: s.weekly_pct, resets_at: s.weekly_resets_at, started: new Date().toISOString() };
+    const m = a.model ? String(a.model).toLowerCase() : undefined;
+    const base = pctOf({ model: m }, s);
+    all[a.project] = { name: a.project, ...(m && { model: m }), limit_pct: a.weekly_pct, baseline_pct: base, carried: 0,
+      last_pct: base, resets_at: s.weekly_resets_at, started: new Date().toISOString() };
     const r = measure(all[a.project], s); save(all); return r;
   }
   if (name === 'budget_check') {
@@ -130,6 +145,7 @@ if (isMain && process.argv.includes('--statusline')) {
     const parts = [
       tint(u.session_pct, `session ${Math.round(u.session_pct)}% (${u.session_resets_in})`),
       tint(u.weekly_pct, `week ${Math.round(u.weekly_pct)}% (${u.weekly_resets_in})`),
+      ...(u.weekly_fable_pct != null ? [tint(u.weekly_fable_pct, `fable ${u.weekly_fable_pct}%`)] : []),
       ...(await call('budget_check')).map((b) =>
         tint((b.used_pct / b.budget_pct) * 100, `${b.project} ${b.used_pct}/${b.budget_pct}%`)),
     ];
